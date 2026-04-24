@@ -1,1 +1,8 @@
 This is our final project for CS551: Cloud Computing class!
+
+## Benchmarking
+
+AWS vs GCP benchmark scripts are available in:
+
+- `benchmarks/README.md`
+- `benchmarks/runner.py`
