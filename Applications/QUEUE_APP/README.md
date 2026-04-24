@@ -194,3 +194,16 @@ cat results.csv
 - **Job Queue**: Large files will queue and be processed by available workers
 - **Monitoring**: Use Flower for Celery monitoring: `flower -A tasks --port=5555`
 - **Error Handling**: Failed jobs create error JSON files with details
+
+## Testing
+
+Run from the repository root:
+
+```bash
+# Queue API + ETL unit tests
+pytest tests/queue -m "unit or api or asyncmock"
+```
+
+Notes:
+- API tests mock Celery dispatch (`.delay`) and do not need Redis.
+- ETL tests run against temporary local files and validate success/error outputs.

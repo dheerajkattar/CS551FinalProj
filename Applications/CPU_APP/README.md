@@ -102,3 +102,16 @@ Deploy to:
 - **AWS ECS/Fargate** with CPU-based scaling
 - **GCP Compute Engine** with Instance Groups
 - **GCP Cloud Run** (for serverless testing)
+
+## Testing
+
+Run from the repository root:
+
+```bash
+# CPU app API and validation tests
+pytest tests/cpu -m api
+```
+
+Notes:
+- Tests mock NumPy-heavy operations for speed and determinism.
+- `slow` marker is available for future benchmark-style tests.
