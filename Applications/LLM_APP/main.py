@@ -15,7 +15,7 @@ if not API_KEY:
 genai.configure(api_key=API_KEY)
 
 # Initialize Gemini model
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # In-memory conversation history (can be replaced with database)
 conversation_history = []

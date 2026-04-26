@@ -26,6 +26,9 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - queue_data:/app/uploads
+      - queue_results:/app/results
     depends_on:
       - redis
     restart: unless-stopped
@@ -36,6 +39,9 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - queue_data:/app/uploads
+      - queue_results:/app/results
     depends_on:
       - redis
     restart: unless-stopped
@@ -47,3 +53,7 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: unless-stopped
+
+volumes:
+  queue_data:
+  queue_results:
