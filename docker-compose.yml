@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  cpu_app:
+    build: ./Applications/CPU_APP
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+  crud_app:
+    build: ./Applications/CRUD_APP
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  queue_app:
+    build: ./Applications/QUEUE_APP
+    ports:
+      - "5002:5002"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  queue_worker:
+    build: ./Applications/QUEUE_APP
+    command: celery -A tasks worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  llm_app:
+    build: ./Applications/LLM_APP
+    ports:
+      - "5003:5003"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    restart: unless-stopped
