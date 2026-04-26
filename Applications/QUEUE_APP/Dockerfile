@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY tasks.py .
 
+# Create required directories
+RUN mkdir -p uploads results
+
 # Expose port
 EXPOSE 5002
 
