@@ -1,0 +1,21 @@
+service: llm-faq-bot
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: us-east-1
+  timeout: 30
+  memorySize: 1024
+  environment:
+    GEMINI_API_KEY: ${env:GEMINI_API_KEY}
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"
+
+plugins:
+  - serverless-python-requirements

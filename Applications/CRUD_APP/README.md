@@ -49,12 +49,49 @@ curl http://localhost:5000/health
 
 ## Cloud Deployment
 
-### AWS RDS PostgreSQL
-1. Create an RDS PostgreSQL instance
-2. Set the `DATABASE_URL` environment variable:
+### AWS Lambda + API Gateway (Serverless)
+This app includes a Serverless Framework config for Lambda deployment.
+
+1. Install deployment tooling:
+```bash
+npm install -g serverless
+```
+
+2. Configure AWS credentials:
+```bash
+aws configure
+```
+
+3. Deploy with the default SQLite configuration:
+```bash
+pip install -r requirements.txt
+serverless deploy
+```
+
+By default, Lambda uses:
+```bash
+DATABASE_URL=sqlite:////tmp/items.db
+```
+
+4. Test the deployed endpoint (replace with your API URL):
+```bash
+curl https://your-api-id.execute-api.us-east-1.amazonaws.com/health
+curl -X POST https://your-api-id.execute-api.us-east-1.amazonaws.com/items \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Serverless Item","description":"created on lambda"}'
+```
+
+#### Benchmarking Notes for SQLite on Lambda
+- SQLite storage under `/tmp` is ephemeral and tied to each Lambda execution environment.
+- Data can be lost when environments are recycled.
+- Separate Lambda instances do not share the same SQLite file.
+- `reservedConcurrency: 1` is set in `serverless.yml` to keep benchmark behavior more consistent.
+
+### AWS RDS PostgreSQL (Optional Advanced Setup)
+If you later want persistent shared storage:
 ```bash
 export DATABASE_URL=postgresql://username:password@your-rds-endpoint.rds.amazonaws.com:5432/dbname
-python main.py
+serverless deploy
 ```
 
 ### GCP Cloud SQL PostgreSQL
@@ -79,11 +116,13 @@ Copy `.env.example` to `.env` and customize:
 cp .env.example .env
 ```
 
-The app automatically uses the `DATABASE_URL` environment variable. If not set, it defaults to SQLite for local development.
+The app automatically uses the `DATABASE_URL` environment variable.
+- Local default: `sqlite:///items.db`
+- Lambda default (if unset): `sqlite:////tmp/items.db`
 
 ## Database Support
 
 The app works with any SQLAlchemy-supported database:
-- SQLite (default, local development)
+- SQLite (default, local + simple Lambda benchmark mode)
 - PostgreSQL (AWS RDS, GCP Cloud SQL)
 - MySQL (AWS RDS, GCP Cloud SQL)

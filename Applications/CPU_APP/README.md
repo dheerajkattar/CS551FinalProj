@@ -102,3 +102,42 @@ Deploy to:
 - **AWS ECS/Fargate** with CPU-based scaling
 - **GCP Compute Engine** with Instance Groups
 - **GCP Cloud Run** (for serverless testing)
+
+## AWS Lambda + API Gateway (Serverless)
+
+This app includes a Serverless Framework config so you can benchmark AWS serverless against the existing microservice deployment.
+
+1. Install deployment tooling:
+```bash
+npm install -g serverless
+npm install --save-dev serverless-python-requirements
+```
+
+2. Configure AWS credentials:
+```bash
+aws configure
+```
+
+3. Deploy from this directory:
+```bash
+serverless deploy
+```
+
+4. Use the deployed API URL:
+```bash
+export CPU_URL="https://your-api-id.execute-api.us-east-1.amazonaws.com/dev"
+```
+
+5. Smoke test the deployment:
+```bash
+curl "$CPU_URL/health"
+curl -X POST "$CPU_URL/compute/fft" \
+  -H "Content-Type: application/json" \
+  -d '{"size": 200000}'
+```
+
+### Benchmarking Notes
+- Lambda memory is set to `3008` MB in `serverless.yml` to provide more CPU for heavy NumPy workloads.
+- Lambda/API Gateway requests are capped by timeout limits; start with benchmark sizes already defined in `benchmarks/scenarios/cpu.py`.
+- Native dependencies (`numpy`, `psutil`) are packaged with Dockerized pip for Linux compatibility.
+- This serverless path is additive: existing Docker/microservice deployment remains unchanged.

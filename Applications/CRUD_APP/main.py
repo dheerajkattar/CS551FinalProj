@@ -4,15 +4,29 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# Database configuration from environment variable
-# Default to SQLite for local development, override for cloud deployment
-db_url = os.getenv('DATABASE_URL', 'sqlite:///items.db')
+# Database configuration from environment variable.
+# Local default uses ./items.db. Lambda fallback uses writable /tmp storage.
+is_lambda_runtime = bool(os.getenv('AWS_LAMBDA_FUNCTION_NAME'))
+default_db_url = 'sqlite:////tmp/items.db' if is_lambda_runtime else 'sqlite:///items.db'
+db_url = os.getenv('DATABASE_URL', default_db_url)
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 10,
-    'pool_recycle': 3600,
-    'pool_pre_ping': True,
-}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+is_sqlite = db_url.startswith('sqlite')
+
+if is_sqlite:
+    # SQLite settings keep local development simple.
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
+else:
+    # Use conservative pool defaults for Lambda/RDS to avoid excessive connections.
+    default_pool_size = 2 if is_lambda_runtime else 10
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': int(os.getenv('DB_POOL_SIZE', default_pool_size)),
+        'max_overflow': int(os.getenv('DB_MAX_OVERFLOW', 0)),
+        'pool_recycle': int(os.getenv('DB_POOL_RECYCLE', 300 if is_lambda_runtime else 3600)),
+        'pool_timeout': int(os.getenv('DB_POOL_TIMEOUT', 30)),
+        'pool_pre_ping': True,
+    }
 
 db = SQLAlchemy(app)
 

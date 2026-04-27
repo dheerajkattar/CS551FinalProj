@@ -1,0 +1,32 @@
+service: cpu-app
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  timeout: 29
+  memorySize: 3008
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+      - http:
+          path: /
+          method: any
+
+package:
+  patterns:
+    - main.py
+    - handler.py
+    - requirements.txt
+
+custom:
+  pythonRequirements:
+    pythonBin: python3
+    dockerizePip: true

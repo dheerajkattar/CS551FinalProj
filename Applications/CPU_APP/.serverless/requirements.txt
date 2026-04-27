@@ -1,0 +1,4 @@
+Flask==3.0.0
+aws-wsgi
+numpy==1.26.4
+psutil==5.9.5

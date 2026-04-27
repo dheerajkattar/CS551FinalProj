@@ -1,0 +1,36 @@
+service: crud-app
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  timeout: 30
+  memorySize: 512
+  environment:
+    DATABASE_URL: sqlite:////tmp/items.db
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+      - http:
+          path: /
+          method: any
+
+package:
+  patterns:
+    - main.py
+    - handler.py
+    - requirements.txt
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    pythonBin: python3

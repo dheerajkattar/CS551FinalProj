@@ -1,0 +1,603 @@
+{
+  "metadata": {
+    "run_id": "20260427T202535Z",
+    "timestamp_utc": "2026-04-27T20:25:46.165370+00:00",
+    "git_sha": "bc58630",
+    "cloud": "aws",
+    "app": "crud",
+    "scenario": "crud_read_heavy",
+    "base_url": "https://7r7kx3nwth.execute-api.us-east-1.amazonaws.com/dev",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 1,
+    "config": {
+      "cloud": "aws",
+      "app": "crud",
+      "scenario": "crud_read_heavy",
+      "base_url": "https://7r7kx3nwth.execute-api.us-east-1.amazonaws.com/dev",
+      "concurrency": 1,
+      "iterations": 50,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 1,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 1,
+        "iterations": 50
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 50,
+    "success_count": 50,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 9.749170023660525,
+    "latency_ms_min": 84.3476252630353,
+    "latency_ms_max": 140.90050011873245,
+    "latency_ms_avg": 100.37016429938376,
+    "latency_ms_p50": 98.57652080245316,
+    "latency_ms_p90": 111.14190467633308,
+    "latency_ms_p95": 124.36935405712575,
+    "latency_ms_p99": 140.2067625336349,
+    "total_duration_seconds": 5.1286417078226805
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 98.8597497344017,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 100.12750001624227,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 102.9646247625351,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 89.52020760625601,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 99.81245826929808,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 99.50212528929114,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 97.40629186853766,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 125.93291699886322,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 99.4746251963079,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 120.66716607660055,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 98.7899168394506,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 85.42929170653224,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 92.69604226574302,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 84.95579101145267,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 98.75645767897367,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 84.3476252630353,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 88.99479126557708,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 93.42783410102129,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 101.0762918740511,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 105.64262513071299,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 94.00645922869444,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 94.5103750564158,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 110.08354229852557,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 102.72741736844182,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 90.1461667381227,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 93.36745832115412,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 122.45833268389106,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 97.17604191973805,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 100.52600037306547,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 96.73104202374816,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 93.76541711390018,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 109.03445770964026,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 99.31787522509694,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 89.95358319953084,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 88.42504164204001,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 96.91679198294878,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 95.58616718277335,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 107.12787508964539,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 95.86083423346281,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 92.35658310353756,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 98.16341707482934,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 140.90050011873245,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 104.80583319440484,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 97.31650026515126,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 100.82300007343292,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 139.48470912873745,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 97.27975027635694,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 100.50479229539633,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 98.39658392593265,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 102.3713331669569,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 3,
+      "metadata": {
+        "json": []
+      }
+    }
+  ],
+  "notes": []
+}
