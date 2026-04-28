@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Queue app container-serverless stack (ECS Fargate + ALB + EFS + Redis)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: queue-app
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet::Id
+  AppImageUri:
+    Type: String
+    Description: ECR image URI for QUEUE_APP (API and worker share the same image)
+  ApiDesiredCount:
+    Type: Number
+    Default: 1
+  WorkerDesiredCount:
+    Type: Number
+    Default: 1
+  RedisNodeType:
+    Type: String
+    Default: cache.t4g.small
+
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ProjectName}-cluster"
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-task-exec-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-task-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ALB ingress for queue API
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS tasks for queue API/worker
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5002
+          ToPort: 5002
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Redis access from ECS tasks
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS NFS access from ECS tasks
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+
+  QueueFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-efs"
+
+  QueueMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref QueueFileSystem
+      SubnetId: !Ref PublicSubnetA
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+
+  QueueMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref QueueFileSystem
+      SubnetId: !Ref PublicSubnetB
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for queue redis
+      SubnetIds:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+
+  RedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: !Sub "${ProjectName}-redis"
+      Engine: redis
+      CacheNodeType: !Ref RedisNodeType
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}-api"
+      RetentionInDays: 14
+
+  WorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}-worker"
+      RetentionInDays: 14
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${ProjectName}-alb"
+      Scheme: internet-facing
+      Subnets:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      SecurityGroups:
+        - !Ref AlbSecurityGroup
+      Type: application
+
+  ApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${ProjectName}-tg"
+      Port: 5002
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ApiTargetGroup
+
+  ApiTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ProjectName}-api"
+      Cpu: "1024"
+      Memory: "2048"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: queueefs
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref QueueFileSystem
+            TransitEncryption: ENABLED
+      ContainerDefinitions:
+        - Name: queue-api
+          Image: !Ref AppImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 5002
+              Protocol: tcp
+          Environment:
+            - Name: CELERY_BROKER_URL
+              Value: !Sub "redis://${RedisCluster.RedisEndpoint.Address}:6379/0"
+            - Name: CELERY_RESULT_BACKEND
+              Value: !Sub "redis://${RedisCluster.RedisEndpoint.Address}:6379/0"
+          MountPoints:
+            - SourceVolume: queueefs
+              ContainerPath: /app/uploads
+            - SourceVolume: queueefs
+              ContainerPath: /app/results
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ApiLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  WorkerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ProjectName}-worker"
+      Cpu: "1024"
+      Memory: "2048"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: queueefs
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref QueueFileSystem
+            TransitEncryption: ENABLED
+      ContainerDefinitions:
+        - Name: queue-worker
+          Image: !Ref AppImageUri
+          Essential: true
+          Command:
+            - celery
+            - -A
+            - tasks
+            - worker
+            - --loglevel=info
+          Environment:
+            - Name: CELERY_BROKER_URL
+              Value: !Sub "redis://${RedisCluster.RedisEndpoint.Address}:6379/0"
+            - Name: CELERY_RESULT_BACKEND
+              Value: !Sub "redis://${RedisCluster.RedisEndpoint.Address}:6379/0"
+          MountPoints:
+            - SourceVolume: queueefs
+              ContainerPath: /app/uploads
+            - SourceVolume: queueefs
+              ContainerPath: /app/results
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref WorkerLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  ApiService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HttpListener
+      - QueueMountTargetA
+      - QueueMountTargetB
+    Properties:
+      ServiceName: !Sub "${ProjectName}-api"
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref ApiDesiredCount
+      TaskDefinition: !Ref ApiTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref AppSecurityGroup
+          Subnets:
+            - !Ref PublicSubnetA
+            - !Ref PublicSubnetB
+      LoadBalancers:
+        - ContainerName: queue-api
+          ContainerPort: 5002
+          TargetGroupArn: !Ref ApiTargetGroup
+
+  WorkerService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - QueueMountTargetA
+      - QueueMountTargetB
+    Properties:
+      ServiceName: !Sub "${ProjectName}-worker"
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref WorkerDesiredCount
+      TaskDefinition: !Ref WorkerTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref AppSecurityGroup
+          Subnets:
+            - !Ref PublicSubnetA
+            - !Ref PublicSubnetB
+
+Outputs:
+  QueueApiBaseUrl:
+    Description: Base URL for benchmark config aws.queue_base_url
+    Value: !Sub "http://${ApplicationLoadBalancer.DNSName}"
+
+  RedisEndpoint:
+    Description: Redis endpoint used for Celery broker/backend
+    Value: !GetAtt RedisCluster.RedisEndpoint.Address
+
+  ClusterName:
+    Value: !Ref Cluster

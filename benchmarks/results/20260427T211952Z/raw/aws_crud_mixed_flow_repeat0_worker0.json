@@ -1,0 +1,693 @@
+{
+  "metadata": {
+    "run_id": "20260427T211952Z",
+    "timestamp_utc": "2026-04-27T21:20:14.639460+00:00",
+    "git_sha": "9855406",
+    "cloud": "aws",
+    "app": "crud",
+    "scenario": "crud_mixed_flow",
+    "base_url": "https://7r7kx3nwth.execute-api.us-east-1.amazonaws.com/dev",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 0,
+    "config": {
+      "cloud": "aws",
+      "app": "crud",
+      "scenario": "crud_mixed_flow",
+      "base_url": "https://7r7kx3nwth.execute-api.us-east-1.amazonaws.com/dev",
+      "concurrency": 1,
+      "iterations": 20,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 0,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 1,
+        "iterations": 20
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 20,
+    "success_count": 20,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 2.3528014500317833,
+    "latency_ms_min": 376.3720840215683,
+    "latency_ms_max": 705.0052923150361,
+    "latency_ms_avg": 424.91632499732077,
+    "latency_ms_p50": 404.26945802755654,
+    "latency_ms_p90": 458.0138209741563,
+    "latency_ms_p95": 476.30624957382696,
+    "latency_ms_p99": 659.2654837667939,
+    "total_duration_seconds": 8.500504791736603
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 403.82299991324544,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 421.0900831967592,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 376.3720840215683,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 464.26945785060525,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 457.3187502101064,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 430.1016670651734,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 378.81849985569715,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 451.8969999626279,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 416.06275038793683,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 400.73700016364455,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 391.5775832720101,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 389.5096657797694,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 393.58774991706014,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 428.52400010451674,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 392.64624984934926,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 379.02737502008677,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 393.1896248832345,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 404.71591614186764,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 420.0527500361204,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 705.0052923150361,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "steps": [
+          {
+            "step": "create",
+            "status_code": 201,
+            "success": true
+          },
+          {
+            "step": "get",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "update",
+            "status_code": 200,
+            "success": true
+          },
+          {
+            "step": "delete",
+            "status_code": 200,
+            "success": true
+          }
+        ]
+      }
+    }
+  ],
+  "notes": []
+}

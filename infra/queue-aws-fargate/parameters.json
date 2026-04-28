@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "queue-app"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-0ca6be502bc25bc8e"
+  },
+  {
+    "ParameterKey": "PublicSubnetA",
+    "ParameterValue": "subnet-078ee9b49b475286b"
+  },
+  {
+    "ParameterKey": "PublicSubnetB",
+    "ParameterValue": "subnet-0a39a60bebdbad141"
+  },
+  {
+    "ParameterKey": "AppImageUri",
+    "ParameterValue": "472105259890.dkr.ecr.us-east-1.amazonaws.com/queue-app:latest"
+  },
+  {
+    "ParameterKey": "ApiDesiredCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "WorkerDesiredCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "RedisNodeType",
+    "ParameterValue": "cache.t4g.small"
+  }
+]

@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "run_id": "20260427T211952Z",
+    "timestamp_utc": "2026-04-27T21:20:33.304472+00:00",
+    "git_sha": "9855406",
+    "cloud": "aws",
+    "app": "cpu",
+    "scenario": "cpu_eigen_small",
+    "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 0,
+    "config": {
+      "cloud": "aws",
+      "app": "cpu",
+      "scenario": "cpu_eigen_small",
+      "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+      "concurrency": 2,
+      "iterations": 6,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 0,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 2,
+        "iterations": 6,
+        "size": 300
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 6,
+    "success_count": 6,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 5.379797249751216,
+    "latency_ms_min": 348.4789580106735,
+    "latency_ms_max": 403.24874967336655,
+    "latency_ms_avg": 364.34248586495715,
+    "latency_ms_p50": 357.37595800310373,
+    "latency_ms_p90": 386.27183297649026,
+    "latency_ms_p95": 394.7602913249284,
+    "latency_ms_p99": 401.5510580036789,
+    "total_duration_seconds": 1.115283666178584
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 369.294916279614,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.161,
+          "cpu_usage_percent": 99.8,
+          "matrix_size": 300,
+          "memory_used_mb": 66.35,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 403.24874967336655,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 163,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1873,
+          "cpu_usage_percent": 89.8,
+          "matrix_size": 300,
+          "memory_used_mb": 67.45,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 359.5091658644378,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 161,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.164,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 300,
+          "memory_used_mb": 67.7,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 350.28037521988153,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 163,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1608,
+          "cpu_usage_percent": 99.8,
+          "matrix_size": 300,
+          "memory_used_mb": 66.35,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 348.4789580106735,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.16,
+          "cpu_usage_percent": 109.8,
+          "matrix_size": 300,
+          "memory_used_mb": 66.35,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 355.24275014176965,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1596,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 300,
+          "memory_used_mb": 67.7,
+          "num_eigenvalues": 300,
+          "operation": "eigenvalue_decomposition"
+        }
+      }
+    }
+  ],
+  "notes": []
+}

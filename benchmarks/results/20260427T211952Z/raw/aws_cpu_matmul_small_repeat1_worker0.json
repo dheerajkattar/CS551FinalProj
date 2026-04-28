@@ -1,0 +1,198 @@
+{
+  "metadata": {
+    "run_id": "20260427T211952Z",
+    "timestamp_utc": "2026-04-27T21:20:29.240448+00:00",
+    "git_sha": "9855406",
+    "cloud": "aws",
+    "app": "cpu",
+    "scenario": "cpu_matmul_small",
+    "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 1,
+    "config": {
+      "cloud": "aws",
+      "app": "cpu",
+      "scenario": "cpu_matmul_small",
+      "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+      "concurrency": 2,
+      "iterations": 8,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 1,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 2,
+        "iterations": 8,
+        "size": 500
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 8,
+    "success_count": 8,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 6.105394759500621,
+    "latency_ms_min": 302.0007908344269,
+    "latency_ms_max": 355.1670000888407,
+    "latency_ms_avg": 324.4847498717718,
+    "latency_ms_p50": 325.8711458183825,
+    "latency_ms_p90": 343.3625205885619,
+    "latency_ms_p95": 349.2647603387013,
+    "latency_ms_p99": 353.98655213881284,
+    "total_duration_seconds": 1.3103165831416845
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 318.40962497517467,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1106,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 500,
+          "memory_used_mb": 67.38,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 355.1670000888407,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 164,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.11,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 500,
+          "memory_used_mb": 65.14,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 302.0007908344269,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 164,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.11,
+          "cpu_usage_percent": 99.8,
+          "matrix_size": 500,
+          "memory_used_mb": 65.13,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 304.6790002845228,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1121,
+          "cpu_usage_percent": 109.8,
+          "matrix_size": 500,
+          "memory_used_mb": 67.4,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 305.71312503889203,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1105,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 500,
+          "memory_used_mb": 67.34,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 338.2723331451416,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1099,
+          "cpu_usage_percent": 99.8,
+          "matrix_size": 500,
+          "memory_used_mb": 65.23,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 333.33266666159034,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1106,
+          "cpu_usage_percent": 89.9,
+          "matrix_size": 500,
+          "memory_used_mb": 65.27,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 338.30345794558525,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 166,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1102,
+          "cpu_usage_percent": 99.9,
+          "matrix_size": 500,
+          "memory_used_mb": 67.34,
+          "operation": "matrix_multiplication",
+          "result_shape": "(500, 500)"
+        }
+      }
+    }
+  ],
+  "notes": []
+}

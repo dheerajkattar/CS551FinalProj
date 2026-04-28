@@ -3,7 +3,7 @@
     "aws": {
       "crud_base_url": "https://7r7kx3nwth.execute-api.us-east-1.amazonaws.com/dev",
       "cpu_base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
-      "queue_base_url": "https://your-aws-queue.example.com",
+      "queue_base_url": "http://queue-app-alb-210461894.us-east-1.elb.amazonaws.com",
       "llm_base_url": "https://your-aws-llm.example.com"
     },
     "gcp": {

@@ -155,6 +155,31 @@ export CELERY_BROKER_URL=redis://your-memorystore-endpoint:6379/0
 3. Run Celery workers on **EC2** or **ECS**
 4. Store results in **S3**
 
+### AWS ECS Fargate (Container-Serverless for Benchmarking)
+This project also includes a container-serverless deployment path that keeps the existing Flask + Celery architecture unchanged.
+
+Provisioning assets:
+- `infra/queue-aws-fargate/cloudformation.yaml`
+- `infra/queue-aws-fargate/parameters.example.json`
+- `infra/queue-aws-fargate/README.md`
+
+Key behavior:
+- API and worker run as separate Fargate services
+- Redis runs in ElastiCache
+- EFS is mounted to `/app/uploads` and `/app/results` for both services
+- Existing env contract is preserved:
+  - `CELERY_BROKER_URL=redis://<endpoint>:6379/0`
+  - `CELERY_RESULT_BACKEND=redis://<endpoint>:6379/0`
+
+After deployment, set benchmark URL:
+```bash
+# Use CloudFormation output QueueApiBaseUrl
+export QUEUE_URL="http://<alb-dns-name>"
+```
+
+Then update:
+- `benchmarks/config.json` → `environments.aws.queue_base_url`
+
 ### GCP
 1. Set up **Cloud Memorystore** (Redis) instance
 2. Deploy Flask app on **Cloud Run** or **App Engine**

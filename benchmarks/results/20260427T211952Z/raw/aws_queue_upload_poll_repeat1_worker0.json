@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "run_id": "20260427T211952Z",
+    "timestamp_utc": "2026-04-27T21:20:40.107746+00:00",
+    "git_sha": "9855406",
+    "cloud": "aws",
+    "app": "queue",
+    "scenario": "queue_upload_poll",
+    "base_url": "http://queue-app-alb-210461894.us-east-1.elb.amazonaws.com",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 1,
+    "config": {
+      "cloud": "aws",
+      "app": "queue",
+      "scenario": "queue_upload_poll",
+      "base_url": "http://queue-app-alb-210461894.us-east-1.elb.amazonaws.com",
+      "concurrency": 2,
+      "iterations": 8,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 1,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 2,
+        "iterations": 8,
+        "poll_interval_seconds": 1.0,
+        "max_poll_seconds": 60
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 8,
+    "success_count": 8,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 11.64621986303533,
+    "latency_ms_min": 160.50683287903666,
+    "latency_ms_max": 179.37391716986895,
+    "latency_ms_avg": 168.98564080474898,
+    "latency_ms_p50": 166.30877112038434,
+    "latency_ms_p90": 179.0190172381699,
+    "latency_ms_p95": 179.19646720401943,
+    "latency_ms_p99": 179.33842717669904,
+    "total_duration_seconds": 0.6869181669317186,
+    "e2e_time_ms_avg": 168.98564080474898,
+    "e2e_time_ms_p95": 179.19646720401943
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 160.50683287903666,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "84d58a89-ab30-47cb-989e-0df3c6c1df14",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.16050683287903666
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 166.85870895162225,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "ee115eb3-0489-44d4-b438-b70e932f6898",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.16685870895162225
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 172.27833298966289,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "931b6164-19e3-420a-b08e-de887e7614a1",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.17227833298966289
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 179.37391716986895,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "546ebf79-51b3-451b-8e08-e9ebcd4a5fdb",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.17937391716986895
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 163.10329176485538,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "9840c750-12fd-41c2-a07a-f3b2691928dc",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.16310329176485538
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 165.75883328914642,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "56647015-910b-4ea0-b092-7e710b9be466",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.16575883328914642
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 165.13829212635756,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "e1008b51-e859-435c-ab6a-37c09cd498a3",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.16513829212635756
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 178.86691726744175,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 0,
+      "metadata": {
+        "job_id": "431e7b8c-c006-4550-9c28-53a39ff8c022",
+        "terminal_status": "completed",
+        "e2e_time_seconds": 0.17886691726744175
+      }
+    }
+  ],
+  "notes": []
+}

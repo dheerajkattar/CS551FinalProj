@@ -1,0 +1,198 @@
+{
+  "metadata": {
+    "run_id": "20260427T211952Z",
+    "timestamp_utc": "2026-04-27T21:20:36.474796+00:00",
+    "git_sha": "9855406",
+    "cloud": "aws",
+    "app": "cpu",
+    "scenario": "cpu_fft_medium",
+    "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+    "mode": "single",
+    "worker_index": 0,
+    "worker_count": 1,
+    "repeat_index": 0,
+    "config": {
+      "cloud": "aws",
+      "app": "cpu",
+      "scenario": "cpu_fft_medium",
+      "base_url": "https://z24tol58ok.execute-api.us-east-1.amazonaws.com/dev",
+      "concurrency": 2,
+      "iterations": 8,
+      "timeout_seconds": 30,
+      "retry_count": 1,
+      "warmup_iterations": 1,
+      "repeat_index": 0,
+      "mode": "single",
+      "worker_index": 0,
+      "worker_count": 1,
+      "cooldown_seconds": 0.0,
+      "scenario_options": {
+        "concurrency": 2,
+        "iterations": 8,
+        "size": 200000
+      }
+    }
+  },
+  "metrics": {
+    "request_count": 8,
+    "success_count": 8,
+    "failure_count": 0,
+    "failure_rate": 0.0,
+    "throughput_rps": 6.0405388090538406,
+    "latency_ms_min": 300.8611253462732,
+    "latency_ms_max": 377.61433282867074,
+    "latency_ms_avg": 329.60921875201166,
+    "latency_ms_p50": 320.70777053013444,
+    "latency_ms_p90": 354.6170291956514,
+    "latency_ms_p95": 366.1156810121611,
+    "latency_ms_p99": 375.3146024653688,
+    "total_duration_seconds": 1.3243851670995355
+  },
+  "request_results": [
+    {
+      "success": true,
+      "latency_ms": 338.9237090013921,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1123,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.97,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 377.61433282867074,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1174,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 69.77,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 300.8611253462732,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1102,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.84,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 344.7610419243574,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1099,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.97,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 320.3567499294877,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1099,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.97,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 313.49183386191726,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1098,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.84,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 319.80616599321365,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 162,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.1099,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.97,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    },
+    {
+      "success": true,
+      "latency_ms": 321.0587911307812,
+      "status_code": 200,
+      "error": null,
+      "bytes_sent": 0,
+      "bytes_received": 160,
+      "metadata": {
+        "json": {
+          "computation_time_seconds": 0.11,
+          "cpu_usage_percent": 0.0,
+          "memory_used_mb": 66.84,
+          "operation": "fast_fourier_transform",
+          "result_size": 200000,
+          "signal_size": 200000
+        }
+      }
+    }
+  ],
+  "notes": []
+}
