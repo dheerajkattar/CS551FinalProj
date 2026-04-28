@@ -1,229 +1,134 @@
-# LLM FAQ Bot with Gemini API
+# LLM FAQ Bot (VM Deployment Track)
 
-A simple FastAPI application that uses Google's Gemini API (free tier) to answer user questions. Perfect for learning LLM integration and testing on cloud platforms.
-
-## Getting Started
-
-### 1. Get Free Gemini API Key
-
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikeys)
-2. Click "Create API Key" → "Create API key in new project"
-3. Copy your API key (no credit card required for free tier)
-
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Set Environment Variable
-
-```bash
-export GEMINI_API_KEY="your-api-key-here"
-```
-
-Or create a `.env` file:
-```bash
-GEMINI_API_KEY=your-api-key-here
-```
-
-### 4. Run the Application
-
-```bash
-python main.py
-```
-
-API runs on `http://localhost:5003`
-
-Access interactive docs at `http://localhost:5003/docs`
+FastAPI service for single-turn and multi-turn Q&A using Gemini.  
+Current primary deployment target is **one EC2 VM** and **one GCE VM** with equivalent runtime settings.
 
 ## API Endpoints
 
-### 1. Ask a Question (Single Turn)
+- `POST /ask` - Single-turn question answering.
+- `POST /chat` - Multi-turn chat with per-session in-memory context.
+- `GET /history/{session_id}` - Session conversation history.
+- `DELETE /history/{session_id}` - Clear one session history.
+- `GET /health` - Liveness + readiness (`ready=true` only when key is configured).
+
+## Local Run
+
+From `Applications/LLM_APP`:
+
 ```bash
-curl -X POST http://localhost:5003/ask \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What is machine learning?",
-    "session_id": "user123"
-  }'
-```
-
-**Response:**
-```json
-{
-  "question": "What is machine learning?",
-  "answer": "Machine learning is...",
-  "session_id": "user123",
-  "timestamp": "2026-04-23T10:30:45.123456"
-}
-```
-
-### 2. Multi-Turn Conversation (Chat)
-```bash
-curl -X POST http://localhost:5003/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "Explain neural networks",
-    "session_id": "user123"
-  }'
-```
-
-Maintains conversation context within a session.
-
-### 3. Get Conversation History
-```bash
-curl http://localhost:5003/history/user123
-```
-
-**Response:**
-```json
-{
-  "session_id": "user123",
-  "message_count": 5,
-  "history": [
-    {
-      "session_id": "user123",
-      "question": "What is ML?",
-      "answer": "...",
-      "timestamp": "2026-04-23T10:00:00"
-    }
-  ]
-}
-```
-
-### 4. Clear Conversation History
-```bash
-curl -X DELETE http://localhost:5003/history/user123
-```
-
-### 5. Health Check
-```bash
-curl http://localhost:5003/health
-```
-
-## Quick Examples
-
-### Example 1: Simple FAQ
-```bash
-curl -X POST http://localhost:5003/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What is Python?", "session_id": "faq1"}'
-```
-
-### Example 2: Multi-Turn Conversation
-```bash
-# First message
-curl -X POST http://localhost:5003/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Tell me about Docker", "session_id": "dev1"}'
-
-# Follow-up (maintains context)
-curl -X POST http://localhost:5003/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "How do I get started with it?", "session_id": "dev1"}'
-```
-
-### Example 3: View Session History
-```bash
-curl http://localhost:5003/history/dev1
-```
-
-## Free Tier Limits
-
-**Gemini 1.5 Flash (Free Tier):**
-- 15 requests per minute
-- 1 million tokens per day
-- Input: free
-- Output: free
-
-For more details: [Gemini API Pricing](https://ai.google.dev/pricing)
-
-## Cloud Deployment
-
-### AWS Lambda
-```bash
-# Use AWS Lambda with FastAPI adapter (Mangum)
-pip install mangum
-
-# Deploy with Serverless Framework or CDK
-```
-
-### AWS EC2
-```bash
-# SSH into EC2 instance
-ssh -i key.pem ec2-user@your-instance-ip
-
-# Install and run
-git clone your-repo
-cd your-repo
+cp .env.example .env
+# Edit .env and set GEMINI_API_KEY
 pip install -r requirements.txt
-export GEMINI_API_KEY="your-key"
-python main.py &
+uvicorn main:app --host 0.0.0.0 --port 5003 --workers 2
 ```
 
-### Google Cloud Run
+Open `http://localhost:5003/docs`.
+
+## Configuration (`.env`)
+
+Required:
+
 ```bash
-# Create Dockerfile (included separately)
-gcloud run deploy llm-faq-bot \
-  --source . \
-  --platform managed \
-  --region us-central1 \
-  --set-env-vars GEMINI_API_KEY="your-key" \
-  --allow-unauthenticated
+GEMINI_API_KEY=replace-with-your-key
 ```
 
-### ECS/Fargate
-1. Build Docker image
-2. Push to ECR
-3. Create ECS task definition
-4. Set `GEMINI_API_KEY` environment variable
-5. Deploy to Fargate
+Optional:
 
-## Features
+```bash
+GEMINI_MODEL=gemini-1.5-flash-latest
+GEMINI_REQUEST_TIMEOUT_SECONDS=20
+RATE_LIMIT_RPM=30
+CHAT_CONTEXT_MESSAGES=5
+UVICORN_WORKERS=2
+PORT=5003
+LOG_LEVEL=INFO
+```
 
-- ✅ Single-turn Q&A endpoint
-- ✅ Multi-turn conversation with context
-- ✅ Conversation history tracking
-- ✅ Session management
-- ✅ Free tier support (Gemini 1.5 Flash)
-- ✅ Fast API with interactive docs
-- ✅ Error handling
-- ✅ Cloud-ready (Lambda, EC2, Cloud Run, ECS, etc.)
+## Simultaneous EC2 + GCE Deployment
 
-## Next Steps
+Artifacts live in `deploy/llm_vm`.
 
-1. Extend with database (PostgreSQL) for persistent storage
-2. Add authentication (API keys, JWT)
-3. Implement rate limiting
-4. Add conversation analytics
-5. Deploy to your cloud provider
-6. Add caching for repeated questions
+### 1) Prepare each VM
 
-## Troubleshooting
+- Ubuntu 22.04 or equivalent Linux.
+- Open inbound:
+  - `22/tcp` only from admin CIDR.
+  - `5003/tcp` from benchmark client CIDR.
+- Ensure outbound HTTPS is allowed.
 
-**"GEMINI_API_KEY environment variable not set"**
-- Make sure to set the environment variable before running the app
-- Check with: `echo $GEMINI_API_KEY`
+### 2) Stage `.env` on each VM
 
-**"Error calling Gemini API"**
-- Verify your API key is valid
-- Check your rate limit (15 requests/min on free tier)
-- Check token usage (1M tokens/day free)
+Recommended path:
 
-**"Connection refused"**
-- Ensure the app is running on port 5003
-- Check if port is already in use: `lsof -i :5003`
+```bash
+sudo mkdir -p /opt/llm-faq-bot
+sudo cp .env /opt/llm-faq-bot/.env
+sudo chmod 600 /opt/llm-faq-bot/.env
+```
+
+### 3) Run deployment wrapper on each VM (manual)
+
+On EC2:
+
+```bash
+sudo APP_DIR=/opt/llm-faq-bot REPO_URL=<repo-url> REPO_REF=main bash /opt/llm-faq-bot/deploy/llm_vm/cloud/ec2_setup.sh
+```
+
+On GCE:
+
+```bash
+sudo APP_DIR=/opt/llm-faq-bot REPO_URL=<repo-url> REPO_REF=main bash /opt/llm-faq-bot/deploy/llm_vm/cloud/gce_setup.sh
+```
+
+### 4) Deploy both in parallel from your machine
+
+```bash
+EC2_HOST=<ec2-ip-or-dns> \
+GCE_HOST=<gce-ip-or-dns> \
+SSH_USER=<ssh-user> \
+SSH_KEY_PATH=<private-key-path> \
+REPO_REF=main \
+bash deploy/llm_vm/deploy_parallel.sh
+```
+
+### 5) Verify both targets
+
+```bash
+bash deploy/llm_vm/verify.sh http://<ec2-host>:5003 http://<gce-host>:5003
+```
+
+## Operations Runbook
+
+- Service status:
+  - `sudo systemctl status llm-faq-bot`
+- Restart:
+  - `sudo systemctl restart llm-faq-bot`
+- Logs:
+  - `sudo journalctl -u llm-faq-bot -f`
+- Rollback:
+  - `sudo APP_DIR=/opt/llm-faq-bot bash /opt/llm-faq-bot/deploy/llm_vm/rollback.sh <git-ref>`
+
+## Known Limitations
+
+- Conversation history is in-memory and not shared across VMs.
+- Rate limiting is in-memory per session ID (single-node guardrail, not global).
+- Upstream Gemini latency and quotas dominate throughput behavior.
+
+## Benchmark Input Checklist (for next phase)
+
+Provide these fields before running cross-cloud matrix benchmarks:
+
+- EC2 base URL and GCE base URL.
+- Runtime parity values (`UVICORN_WORKERS`, timeout, rate-limit, model).
+- Test ingress policy (public CIDR vs restricted client).
+- Warmup policy (warmup duration or request count).
+- Concurrency levels and total request budgets.
+- Prompt set definition (short vs long prompts, chat-turn depth).
 
 ## Testing
 
-Run from the repository root:
+From repository root:
 
 ```bash
-# LLM API tests
 pytest tests/llm -m "api or asyncmock"
 ```
-
-Notes:
-- Tests mock Gemini `generate_content` calls, so a real key is not required.
-- A dedicated test validates the `503` response when `GEMINI_API_KEY` is missing.

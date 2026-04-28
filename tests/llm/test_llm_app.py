@@ -13,7 +13,7 @@ class DummyResponse:
 
 
 class DummyModel:
-    def generate_content(self, prompt):
+    def generate_content(self, prompt, request_options=None):
         return DummyResponse(f"echo:{prompt}")
 
 
@@ -21,6 +21,7 @@ class DummyModel:
 def llm_module(monkeypatch):
     module = importlib.import_module(MODULE_NAME)
     module.conversation_history = []
+    module.request_windows.clear()
     module.model = None
     return module
 
@@ -54,6 +55,12 @@ def test_ask_endpoint_success(client, llm_module, monkeypatch):
 @pytest.mark.api
 def test_ask_endpoint_empty_question(client):
     response = client.post("/ask", json={"question": "   ", "session_id": "s1"})
+    assert response.status_code == 400
+
+
+@pytest.mark.api
+def test_chat_endpoint_empty_message(client):
+    response = client.post("/chat", json={"message": "  ", "session_id": "s1"})
     assert response.status_code == 400
 
 
@@ -102,3 +109,53 @@ def test_gemini_error_returns_500(client, llm_module, monkeypatch):
 
     response = client.post("/ask", json={"question": "Hi", "session_id": "s1"})
     assert response.status_code == 500
+
+
+@pytest.mark.api
+def test_rate_limit_returns_429(client, llm_module, monkeypatch):
+    monkeypatch.setattr(llm_module, "RATE_LIMIT_RPM", 1)
+    llm_module.request_windows.clear()
+    monkeypatch.setattr(llm_module, "get_gemini_model", lambda: DummyModel())
+
+    first = client.post("/ask", json={"question": "first", "session_id": "rate"})
+    assert first.status_code == 200
+
+    second = client.post("/ask", json={"question": "second", "session_id": "rate"})
+    assert second.status_code == 429
+
+
+@pytest.mark.api
+def test_health_degraded_when_key_missing(client, llm_module, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    response = client.get("/health")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "degraded"
+    assert body["ready"] is False
+
+
+@pytest.mark.api
+def test_gemini_model_init_uses_configured_model_name(llm_module, monkeypatch):
+    captured = {}
+    monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
+    llm_module.model = None
+    llm_module.MODEL_NAME = "gemini-test-model"
+
+    def fake_configure(api_key):
+        captured["api_key"] = api_key
+
+    class FakeGenerativeModel:
+        def __init__(self, model_name):
+            captured["model_name"] = model_name
+
+        def generate_content(self, prompt, request_options=None):
+            return DummyResponse(prompt)
+
+    monkeypatch.setattr(llm_module.genai, "configure", fake_configure)
+    monkeypatch.setattr(llm_module.genai, "GenerativeModel", FakeGenerativeModel)
+
+    model = llm_module.get_gemini_model()
+    assert model is not None
+    assert captured["api_key"] == "dummy-key"
+    assert captured["model_name"] == "gemini-test-model"

@@ -1,25 +1,32 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import google.generativeai as genai
+import logging
 import os
+import time
+from collections import defaultdict, deque
 from datetime import datetime
-from typing import Optional
+from threading import Lock
+from typing import Deque, Dict, List
+
+import google.generativeai as genai
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
 
 # Initialize FastAPI
 app = FastAPI(title="LLM FAQ Bot", version="1.0.0")
 
-# Configure Gemini API
-API_KEY = os.getenv('GEMINI_API_KEY')
-if not API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable not set. Get it from https://aistudio.google.com/app/apikeys")
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash-latest")
+REQUEST_TIMEOUT_SECONDS = float(os.getenv("GEMINI_REQUEST_TIMEOUT_SECONDS", "20"))
+RATE_LIMIT_RPM = int(os.getenv("RATE_LIMIT_RPM", "30"))
+CHAT_CONTEXT_MESSAGES = int(os.getenv("CHAT_CONTEXT_MESSAGES", "5"))
 
-genai.configure(api_key=API_KEY)
+logger = logging.getLogger("llm_app")
+if not logger.handlers:
+    logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 
-# Initialize Gemini model
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
-
-# In-memory conversation history (can be replaced with database)
-conversation_history = []
+# In-memory conversation history/rate limiting (single-VM baseline design)
+conversation_history: List[dict] = []
+request_windows: Dict[str, Deque[float]] = defaultdict(deque)
+request_windows_lock = Lock()
+model = None
 
 class Question(BaseModel):
     """Request model for asking a question"""
@@ -39,6 +46,61 @@ class ConversationRequest(BaseModel):
     session_id: str = "default"
 
 
+@app.on_event("startup")
+def startup_log_configuration():
+    key_present = bool(os.getenv("GEMINI_API_KEY"))
+    if key_present:
+        logger.info(
+            "Startup config loaded: model=%s timeout_s=%s rate_limit_rpm=%s context_messages=%s",
+            MODEL_NAME,
+            REQUEST_TIMEOUT_SECONDS,
+            RATE_LIMIT_RPM,
+            CHAT_CONTEXT_MESSAGES,
+        )
+    else:
+        logger.warning("GEMINI_API_KEY is not set; /ask and /chat will return 503 until configured.")
+
+
+@app.middleware("http")
+async def log_request_timing(request: Request, call_next):
+    start = time.perf_counter()
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        duration_ms = (time.perf_counter() - start) * 1000
+        logger.info(
+            "request method=%s path=%s status=%s latency_ms=%.2f",
+            request.method,
+            request.url.path,
+            status_code,
+            duration_ms,
+        )
+
+
+def enforce_rate_limit(session_id: str):
+    if RATE_LIMIT_RPM <= 0:
+        return
+
+    now = time.time()
+    cutoff = now - 60
+
+    with request_windows_lock:
+        window = request_windows[session_id]
+        while window and window[0] < cutoff:
+            window.popleft()
+
+        if len(window) >= RATE_LIMIT_RPM:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded for session {session_id}. Try again shortly.",
+            )
+
+        window.append(now)
+
+
 def get_gemini_model():
     global model
     if model is not None:
@@ -51,9 +113,32 @@ def get_gemini_model():
             detail="GEMINI_API_KEY environment variable not set. Get it from https://aistudio.google.com/app/apikeys",
         )
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(MODEL_NAME)
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(MODEL_NAME)
+    except Exception as exc:
+        logger.exception("Failed to initialize Gemini model")
+        raise HTTPException(status_code=503, detail=f"Gemini initialization failed: {exc}") from exc
+
     return model
+
+
+def generate_answer(prompt: str) -> str:
+    llm_model = get_gemini_model()
+
+    try:
+        response = llm_model.generate_content(
+            prompt,
+            request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
+        )
+    except TypeError:
+        # Test doubles or older SDK signatures may not accept request_options.
+        response = llm_model.generate_content(prompt)
+
+    answer = getattr(response, "text", "")
+    if not answer:
+        raise HTTPException(status_code=502, detail="Gemini returned an empty response.")
+    return answer
 
 @app.get("/")
 def read_root():
@@ -85,10 +170,8 @@ def ask_question(request: Question):
         if not request.question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
 
-        # Call Gemini API
-        llm_model = get_gemini_model()
-        response = llm_model.generate_content(request.question)
-        answer = response.text
+        enforce_rate_limit(request.session_id)
+        answer = generate_answer(request.question)
 
         # Store in conversation history
         entry = {
@@ -130,6 +213,8 @@ def chat_conversation(request: ConversationRequest):
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
 
+        enforce_rate_limit(request.session_id)
+
         # Get conversation context for this session
         session_messages = [
             h for h in conversation_history
@@ -139,7 +224,7 @@ def chat_conversation(request: ConversationRequest):
         # Build context from previous messages
         context = "\n".join([
             f"User: {m['message']}\nAssistant: {m['answer']}"
-            for m in session_messages[-5:]  # Last 5 messages for context
+            for m in session_messages[-CHAT_CONTEXT_MESSAGES:]
         ])
 
         # Create prompt with context
@@ -148,10 +233,7 @@ def chat_conversation(request: ConversationRequest):
         else:
             full_prompt = request.message
 
-        # Call Gemini API
-        llm_model = get_gemini_model()
-        response = llm_model.generate_content(full_prompt)
-        answer = response.text
+        answer = generate_answer(full_prompt)
 
         # Store in conversation history
         entry = {
@@ -216,9 +298,13 @@ def clear_conversation_history(session_id: str):
 @app.get("/health")
 def health_check():
     """Health check endpoint"""
+    key_present = bool(os.getenv("GEMINI_API_KEY"))
     return {
-        "status": "healthy",
+        "status": "healthy" if key_present else "degraded",
+        "ready": key_present,
         "service": "LLM FAQ Bot",
+        "model": MODEL_NAME,
+        "model_initialized": model is not None,
         "timestamp": datetime.now().isoformat()
     }
 

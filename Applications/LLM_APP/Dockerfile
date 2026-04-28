@@ -6,14 +6,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY main.py .
+COPY . .
 
-# Set environment variables
-ENV GEMINI_API_KEY=${GEMINI_API_KEY}
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=5003 \
+    UVICORN_WORKERS=2
 
-# Expose port
 EXPOSE 5003
 
-# Run the application
-CMD ["python", "main.py"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-5003} --workers ${UVICORN_WORKERS:-2}"]

@@ -1,57 +1,31 @@
-This is our final project for CS551: Cloud Computing class!
+CS551 Final Project: Cloud workload benchmarking with a current pivot to LLM-first VM deployment.
 
-<<<<<<< HEAD
-## Benchmarking
+## Current Focus: LLM on EC2 + GCE
 
-AWS vs GCP benchmark scripts are available in:
+Primary implementation lives in `Applications/LLM_APP`.
+
+Deployment artifacts:
+
+- `Applications/LLM_APP/DEPLOYMENT_CONTRACT.md`
+- `deploy/llm_vm/bootstrap.sh`
+- `deploy/llm_vm/deploy_parallel.sh`
+- `deploy/llm_vm/verify.sh`
+- `deploy/llm_vm/EC2_GCE_PARITY.md`
+
+## Implementation Status
+
+- LLM runtime hardened for VM deployment:
+  - runtime-safe Gemini init
+  - health/readiness semantics
+  - request timeout and basic rate limiting controls
+  - request latency logging
+- Simultaneous deployment workflow for one EC2 VM and one GCE VM is scripted in `deploy/llm_vm`.
+
+## Benchmarking (Next Step)
+
+Benchmark harness remains in:
 
 - `benchmarks/README.md`
 - `benchmarks/runner.py`
-=======
-## Test Suite
 
-### Install Test Dependencies
-
-```bash
-pip install -r requirements-dev.txt
-pip install -r Applications/CRUD_APP/requirements.txt
-pip install -r Applications/CPU_APP/requirements.txt
-pip install -r Applications/QUEUE_APP/requirements.txt
-pip install -r Applications/LLM_APP/requirements.txt
-```
-
-### Run Tests
-
-```bash
-# Default run: non-slow tests with coverage (70% minimum)
-pytest
-
-# Include slow tests too
-pytest -m "slow or not slow"
-```
-
-### Run By App
-
-```bash
-pytest tests/crud
-pytest tests/cpu
-pytest tests/queue
-pytest tests/llm
-```
-
-### Run By Marker
-
-```bash
-pytest -m unit
-pytest -m api
-pytest -m asyncmock
-pytest -m "not slow"
-```
-
-### Troubleshooting
-
-- If imports fail, run tests from repo root (`CS551FinalProj`).
-- If SQLite errors occur, remove stale local `items.db` and rerun.
-- Queue tests are mocked and do not require Redis.
-- LLM tests mock Gemini calls and do not require a real API key.
->>>>>>> origin/dheeraj-testing
+For the upcoming matrix, use `benchmarks/LLM_BENCHMARK_INPUTS.md` to provide benchmark parameters.
