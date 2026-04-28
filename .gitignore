@@ -1,1 +1,5 @@
 Applications/*/.env
+__pycache__/
+*.pyc
+.coverage
+htmlcov/

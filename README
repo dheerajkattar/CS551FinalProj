@@ -1,8 +1,57 @@
 This is our final project for CS551: Cloud Computing class!
 
+<<<<<<< HEAD
 ## Benchmarking
 
 AWS vs GCP benchmark scripts are available in:
 
 - `benchmarks/README.md`
 - `benchmarks/runner.py`
+=======
+## Test Suite
+
+### Install Test Dependencies
+
+```bash
+pip install -r requirements-dev.txt
+pip install -r Applications/CRUD_APP/requirements.txt
+pip install -r Applications/CPU_APP/requirements.txt
+pip install -r Applications/QUEUE_APP/requirements.txt
+pip install -r Applications/LLM_APP/requirements.txt
+```
+
+### Run Tests
+
+```bash
+# Default run: non-slow tests with coverage (70% minimum)
+pytest
+
+# Include slow tests too
+pytest -m "slow or not slow"
+```
+
+### Run By App
+
+```bash
+pytest tests/crud
+pytest tests/cpu
+pytest tests/queue
+pytest tests/llm
+```
+
+### Run By Marker
+
+```bash
+pytest -m unit
+pytest -m api
+pytest -m asyncmock
+pytest -m "not slow"
+```
+
+### Troubleshooting
+
+- If imports fail, run tests from repo root (`CS551FinalProj`).
+- If SQLite errors occur, remove stale local `items.db` and rerun.
+- Queue tests are mocked and do not require Redis.
+- LLM tests mock Gemini calls and do not require a real API key.
+>>>>>>> origin/dheeraj-testing

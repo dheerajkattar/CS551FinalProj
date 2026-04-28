@@ -126,3 +126,16 @@ The app works with any SQLAlchemy-supported database:
 - SQLite (default, local + simple Lambda benchmark mode)
 - PostgreSQL (AWS RDS, GCP Cloud SQL)
 - MySQL (AWS RDS, GCP Cloud SQL)
+
+## Testing
+
+Run from the repository root:
+
+```bash
+# CRUD tests only
+pytest tests/crud -m "unit or api"
+```
+
+Notes:
+- Tests use an isolated SQLite database per test run.
+- If you run the app locally and see stale data behavior, remove `items.db`.

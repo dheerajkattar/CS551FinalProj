@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import google.generativeai as genai
 import os
 from datetime import datetime
+from typing import Optional
 
 # Initialize FastAPI
 app = FastAPI(title="LLM FAQ Bot", version="1.0.0")
@@ -37,6 +38,23 @@ class ConversationRequest(BaseModel):
     message: str
     session_id: str = "default"
 
+
+def get_gemini_model():
+    global model
+    if model is not None:
+        return model
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="GEMINI_API_KEY environment variable not set. Get it from https://aistudio.google.com/app/apikeys",
+        )
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(MODEL_NAME)
+    return model
+
 @app.get("/")
 def read_root():
     """Root endpoint"""
@@ -68,7 +86,8 @@ def ask_question(request: Question):
             raise HTTPException(status_code=400, detail="Question cannot be empty")
 
         # Call Gemini API
-        response = model.generate_content(request.question)
+        llm_model = get_gemini_model()
+        response = llm_model.generate_content(request.question)
         answer = response.text
 
         # Store in conversation history
@@ -88,6 +107,8 @@ def ask_question(request: Question):
             timestamp=datetime.now().isoformat()
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calling Gemini API: {str(e)}")
 
@@ -128,7 +149,8 @@ def chat_conversation(request: ConversationRequest):
             full_prompt = request.message
 
         # Call Gemini API
-        response = model.generate_content(full_prompt)
+        llm_model = get_gemini_model()
+        response = llm_model.generate_content(full_prompt)
         answer = response.text
 
         # Store in conversation history
@@ -148,6 +170,8 @@ def chat_conversation(request: ConversationRequest):
             timestamp=datetime.now().isoformat()
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calling Gemini API: {str(e)}")
 

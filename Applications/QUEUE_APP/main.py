@@ -18,11 +18,20 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.co
 celery.conf.update(app.config)
 
 # Import tasks after celery is initialized
-from tasks import process_csv_etl
+try:
+    # Supports package imports in tests.
+    from .tasks import process_csv_etl
+except ImportError:
+    # Supports direct script execution: `python main.py`.
+    from tasks import process_csv_etl
 
-# Create upload folder if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs('results', exist_ok=True)
+def initialize_storage_dirs():
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs('results', exist_ok=True)
+
+
+if os.getenv("SKIP_QUEUE_DIR_INIT") != "1":
+    initialize_storage_dirs()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -117,4 +126,5 @@ def health():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5002)
+    initialize_storage_dirs()
+    app.run(debug=True, port=5002)

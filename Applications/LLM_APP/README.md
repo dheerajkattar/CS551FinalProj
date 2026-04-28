@@ -214,3 +214,16 @@ gcloud run deploy llm-faq-bot \
 **"Connection refused"**
 - Ensure the app is running on port 5003
 - Check if port is already in use: `lsof -i :5003`
+
+## Testing
+
+Run from the repository root:
+
+```bash
+# LLM API tests
+pytest tests/llm -m "api or asyncmock"
+```
+
+Notes:
+- Tests mock Gemini `generate_content` calls, so a real key is not required.
+- A dedicated test validates the `503` response when `GEMINI_API_KEY` is missing.

@@ -38,8 +38,14 @@ class Item(db.Model):
     def to_dict(self):
         return {'id': self.id, 'name': self.name, 'description': self.description}
 
-with app.app_context():
-    db.create_all()
+
+def initialize_database():
+    with app.app_context():
+        db.create_all()
+
+
+if os.getenv("SKIP_DB_INIT") != "1":
+    initialize_database()
 
 # CREATE
 @app.route('/items', methods=['POST'])
@@ -91,4 +97,5 @@ def health():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5000)
+    initialize_database()
+    app.run(debug=True, port=5000)
