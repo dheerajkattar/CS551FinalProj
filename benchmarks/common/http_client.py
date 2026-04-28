@@ -14,6 +14,7 @@ def request_with_retries(
     expected_statuses: Optional[Tuple[int, ...]] = None,
     json_body: Optional[Dict] = None,
     files: Optional[Dict] = None,
+    headers: Optional[Dict] = None,
 ) -> RequestResult:
     attempts = max(1, retry_count + 1)
     last_error = None
@@ -27,6 +28,7 @@ def request_with_retries(
                 timeout=timeout_seconds,
                 json=json_body,
                 files=files,
+                headers=headers,
             )
             latency_ms = (time.perf_counter() - start) * 1000.0
             ok = (

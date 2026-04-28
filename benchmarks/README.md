@@ -1,111 +1,83 @@
-# AWS vs GCP Benchmarking Suite
+# Cloud Application Profiler
 
-This directory contains benchmarking scripts for comparing the deployed AWS and GCP versions of:
+Simple performance testing for cloud applications deployed on different architectures (serverless, EC2, Kubernetes, etc.).
 
-- `CRUD_APP`
-- `CPU_APP`
-- `QUEUE_APP`
-- `LLM_APP`
-
-The suite writes machine-readable artifacts for analysis:
-
-- Raw per-scenario JSON files
-- Run-level `summary.csv` and `summary.json`
-- Cloud comparison `comparison.csv` and `comparison.json`
-
-## 1) Setup
-
-From repository root:
+## Quick Start
 
 ```bash
+# Install dependencies
 python3 -m pip install -r benchmarks/requirements-bench.txt
+
+# Run benchmark against CRUD app
+python3 -m benchmarks.runner --crud-url https://your-crud-endpoint
 ```
 
-Create a real config from the template:
+Results saved to `benchmarks/results/<timestamp>/results.json`.
+
+## Usage
 
 ```bash
-cp benchmarks/config.example.json benchmarks/config.json
-```
+# Single app
+python3 -m benchmarks.runner --crud-url http://localhost:5000
 
-Then update each base URL in `benchmarks/config.json` for both `aws` and `gcp`.
-
-## 2) Single-Client Baseline Run
-
-```bash
+# Multiple apps
 python3 -m benchmarks.runner \
-  --config benchmarks/config.json \
-  --clouds aws gcp \
-  --apps crud cpu queue llm \
-  --mode single
+  --crud-url http://localhost:5000 \
+  --cpu-url http://localhost:5001 \
+  --queue-url http://localhost:5002 \
+  --llm-url http://localhost:5003
+
+# Custom output location
+python3 -m benchmarks.runner \
+  --crud-url http://localhost:5000 \
+  --results-dir /tmp/results \
+  --run-label my-test
 ```
 
-Artifacts are written under:
+## What's Tested
 
-```text
+Each app has predefined scenarios that run automatically when you provide the URL:
+
+**CRUD** (`--crud-url`)
+- `crud_user_requests`: Single user creates, reads, and deletes notes with realistic think time (200 iterations, 20 concurrent users)
+
+**CPU** (`--cpu-url`) — Coming soon
+
+**Queue** (`--queue-url`) — Coming soon
+
+**LLM** (`--llm-url`) — Coming soon
+
+## Output
+
+```
 benchmarks/results/<run_id>/
+└── results.json  # Detailed results with latency percentiles and throughput
 ```
 
-## 3) Optional Distributed Mode
+### Result Fields
+- `app`, `scenario` — test metadata
+- `request_count`, `success_count`, `failure_count`, `failure_rate` — reliability
+- `throughput_rps` — requests per second
+- `latency_ms_min/max/avg/p50/p90/p95/p99` — latency percentiles
 
-Run one worker per load generator:
+## Examples
 
+### Run and compare across deployments
 ```bash
-# Worker 0
-python3 -m benchmarks.runner --config benchmarks/config.json --mode distributed --worker-index 0 --worker-count 2
+# Test deployment A
+python3 -m benchmarks.runner --crud-url https://deployment-a.example.com --run-label deployment-a
 
-# Worker 1
-python3 -m benchmarks.runner --config benchmarks/config.json --mode distributed --worker-index 1 --worker-count 2
+# Test deployment B
+python3 -m benchmarks.runner --crud-url https://deployment-b.example.com --run-label deployment-b
+
+# Compare results
+cat benchmarks/results/deployment-a/results.json
+cat benchmarks/results/deployment-b/results.json
 ```
 
-Merge outputs afterward:
+## Customizing Tests
 
-```bash
-python3 -m benchmarks.merge_distributed \
-  --input-runs benchmarks/results/<run_worker0> benchmarks/results/<run_worker1> \
-  --output-dir benchmarks/results/<merged_run_id>
-```
+Edit `benchmarks/scenarios/<app>.py` to modify test parameters:
+- Each scenario function includes hardcoded `iterations`, `concurrency`, and think times
+- Modify the `run_all_<app>()` function to change defaults
 
-## 4) Scenario Coverage
-
-- `crud_read_heavy`: repeated `GET /items`
-- `crud_mixed_flow`: create + read + update + delete flow
-- `cpu_matmul_small`, `cpu_matinv_medium`, `cpu_eigen_small`, `cpu_fft_medium`
-- `queue_upload_poll`: upload CSV and poll until terminal state
-- `llm_ask`: single-turn prompt
-- `llm_chat_multiturn`: two-turn chat sequence
-
-Concurrency/iterations/repeats are controlled in config (`scenarios` + `defaults`).
-
-## 5) Methodology Notes
-
-What is measured:
-
-- Request success/failure counts
-- Throughput (requests/sec)
-- Latency distribution (`p50`, `p90`, `p95`, `p99`)
-- Failure rate
-- Queue end-to-end completion time when available
-
-What is intentionally not measured here:
-
-- Cross-region network path analysis
-- Host-level CPU/memory counters from the load generator
-- Full distributed orchestration/auto-scaling testbed management
-
-## 6) Fair AWS vs GCP Comparison Checklist
-
-- Use matching instance/service sizes and runtime settings.
-- Use identical benchmark config parameters for both clouds.
-- Include warmup iterations before measured runs.
-- Run multiple repeats and compare averages, not single runs.
-- Watch for confounders:
-  - cold starts
-  - transient 5xx spikes
-  - LLM external API quota/rate throttling
-
-## 7) Output Interpretation
-
-- Lower latency percentiles are better (`latency_ms_p95` especially).
-- Higher throughput is better.
-- Lower failure rate is better.
-- `comparison.csv` includes AWS vs GCP deltas and winner flags by metric.
