@@ -9,8 +9,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 
+# Cloud Run requires PORT env var (default 8080, but we use 5000)
+ENV PORT=5000
+
 # Expose port
-EXPOSE 5000
+EXPOSE $PORT
 
 # Run the application
-CMD ["python", "main.py"]
+CMD exec python main.py

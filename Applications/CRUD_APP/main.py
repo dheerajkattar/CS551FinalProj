@@ -299,6 +299,17 @@ def health():
 
 
 # -------------------------
+# FAVICON / APPLE ICONS (for health checks)
+# -------------------------
+@app.route("/favicon.ico", methods=["GET"])
+@app.route("/apple-touch-icon.png", methods=["GET"])
+@app.route("/apple-touch-icon-precomposed.png", methods=["GET"])
+def static_files():
+    """Return 204 No Content for browser/health check requests."""
+    return "", 204
+
+
+# -------------------------
 # ENTRYPOINT
 # -------------------------
 if os.getenv("SKIP_DB_INIT") != "1":
@@ -307,6 +318,6 @@ if os.getenv("SKIP_DB_INIT") != "1":
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
-        port=int(os.getenv("PORT", 5000)),
+        port=int(os.getenv("PORT", 8080)),
         debug=os.getenv("FLASK_DEBUG") == "1",
     )
