@@ -1,15 +1,15 @@
-# LLM FAQ Bot (VM Deployment Track)
+# LLM FAQ Bot (AWS EC2 + GCP GKE Deployment Track)
 
 FastAPI service for single-turn and multi-turn Q&A using Gemini.  
-Current primary deployment target is **one EC2 VM** and **one GCE VM** with equivalent runtime settings.
+Primary deployment target is now **EC2 (AWS)** and **GKE (GCP)** with Redis-backed session state on both platforms.
 
 ## API Endpoints
 
 - `POST /ask` - Single-turn question answering.
-- `POST /chat` - Multi-turn chat with per-session in-memory context.
+- `POST /chat` - Multi-turn chat with per-session Redis-backed context.
 - `GET /history/{session_id}` - Session conversation history.
 - `DELETE /history/{session_id}` - Clear one session history.
-- `GET /health` - Liveness + readiness (`ready=true` only when key is configured).
+- `GET /health` - Liveness + readiness (`ready=true` only when Gemini and Redis are healthy).
 
 ## Local Run
 
@@ -35,82 +35,89 @@ GEMINI_API_KEY=replace-with-your-key
 Optional:
 
 ```bash
-GEMINI_MODEL=gemini-1.5-flash-latest
+GEMINI_MODEL=gemini-2.5-flash
 GEMINI_REQUEST_TIMEOUT_SECONDS=20
 RATE_LIMIT_RPM=30
 CHAT_CONTEXT_MESSAGES=5
 UVICORN_WORKERS=2
 PORT=5003
 LOG_LEVEL=INFO
+REDIS_URL=redis://managed-redis-endpoint:6379/0
+REDIS_KEY_PREFIX=llm
+REDIS_TIMEOUT_SECONDS=2
+REDIS_SESSION_TTL_SECONDS=86400
 ```
 
-## Simultaneous EC2 + GCE Deployment
+## AWS EC2 + GKE Deployment
 
-Artifacts live in `deploy/llm_vm`.
+Artifacts live in:
 
-### 1) Prepare each VM
+- AWS EC2: `deploy/llm_vm`
+- GKE: `deploy/llm_k8s`
 
-- Ubuntu 22.04 or equivalent Linux.
-- Open inbound:
-  - `22/tcp` only from admin CIDR.
-  - `5003/tcp` from benchmark client CIDR.
-- Ensure outbound HTTPS is allowed.
+### 1) Provision infrastructure
 
-### 2) Stage `.env` on each VM
-
-Recommended path:
+AWS EC2:
 
 ```bash
-sudo mkdir -p /opt/llm-faq-bot
-sudo cp .env /opt/llm-faq-bot/.env
-sudo chmod 600 /opt/llm-faq-bot/.env
+bash deploy/llm_vm/provision_ec2.sh
 ```
 
-### 3) Run deployment wrapper on each VM (manual)
-
-On EC2:
+GKE + managed Redis:
 
 ```bash
-sudo APP_DIR=/opt/llm-faq-bot REPO_URL=<repo-url> REPO_REF=main bash /opt/llm-faq-bot/deploy/llm_vm/cloud/ec2_setup.sh
+PROJECT_ID=<gcp-project-id> bash deploy/llm_k8s/scripts/provision_gke.sh
 ```
 
-On GCE:
+### 2) Deploy AWS EC2 app runtime
+
+Use EC2 public IP and key path from the provisioning step:
 
 ```bash
-sudo APP_DIR=/opt/llm-faq-bot REPO_URL=<repo-url> REPO_REF=main bash /opt/llm-faq-bot/deploy/llm_vm/cloud/gce_setup.sh
+EC2_HOST=<ec2-public-ip> \
+SSH_KEY_PATH=deploy/llm_vm/.keys/cs551-llm-ec2-key.pem \
+GEMINI_API_KEY=<api-key> \
+bash deploy/llm_vm/deploy_ec2.sh
 ```
 
-### 4) Deploy both in parallel from your machine
+### 3) Prepare GKE Kubernetes secret values
+
+Update and apply:
 
 ```bash
-EC2_HOST=<ec2-ip-or-dns> \
-GCE_HOST=<gce-ip-or-dns> \
-SSH_USER=<ssh-user> \
-SSH_KEY_PATH=<private-key-path> \
-REPO_REF=main \
-bash deploy/llm_vm/deploy_parallel.sh
+kubectl apply -f deploy/llm_k8s/base/secret.example.yaml
 ```
 
-### 5) Verify both targets
+### 4) Deploy GKE overlay
 
 ```bash
-bash deploy/llm_vm/verify.sh http://<ec2-host>:5003 http://<gce-host>:5003
+IMAGE_REPO=<registry/image> IMAGE_TAG=<git-sha> bash deploy/llm_k8s/scripts/deploy.sh gke
+```
+
+### 5) Verify EC2 + GKE endpoints
+
+```bash
+bash deploy/llm_vm/verify.sh http://<ec2-public-ip>:5003 http://<gke-ingress-ip>
 ```
 
 ## Operations Runbook
 
-- Service status:
-  - `sudo systemctl status llm-faq-bot`
-- Restart:
-  - `sudo systemctl restart llm-faq-bot`
-- Logs:
-  - `sudo journalctl -u llm-faq-bot -f`
-- Rollback:
-  - `sudo APP_DIR=/opt/llm-faq-bot bash /opt/llm-faq-bot/deploy/llm_vm/rollback.sh <git-ref>`
+- EC2 service status:
+  - `ssh -i <key.pem> ec2-user@<ec2-ip> 'sudo systemctl status llm-faq-bot --no-pager'`
+- EC2 service logs:
+  - `ssh -i <key.pem> ec2-user@<ec2-ip> 'sudo journalctl -u llm-faq-bot -n 100 --no-pager'`
+- Rollout status:
+  - `kubectl -n llm-bench rollout status deployment/llm-api`
+- Pod logs:
+  - `kubectl -n llm-bench logs deploy/llm-api --tail=100 -f`
+- Scale:
+  - `kubectl -n llm-bench scale deploy/llm-api --replicas=3`
+- Export parity config:
+  - `bash deploy/llm_k8s/scripts/export_runtime_config.sh llm_runtime_config.json`
 
 ## Known Limitations
 
-- Conversation history is in-memory and not shared across VMs.
+- Redis dependency is required for shared chat history behavior.
 - Rate limiting is in-memory per session ID (single-node guardrail, not global).
 - Upstream Gemini latency and quotas dominate throughput behavior.
 
@@ -118,9 +125,10 @@ bash deploy/llm_vm/verify.sh http://<ec2-host>:5003 http://<gce-host>:5003
 
 Provide these fields before running cross-cloud matrix benchmarks:
 
-- EC2 base URL and GCE base URL.
+- EC2 base URL and GKE ingress base URL.
 - Runtime parity values (`UVICORN_WORKERS`, timeout, rate-limit, model).
-- Test ingress policy (public CIDR vs restricted client).
+- Redis endpoint strategy and session TTL settings.
+- Test network policy (security groups + GKE ingress policy).
 - Warmup policy (warmup duration or request count).
 - Concurrency levels and total request budgets.
 - Prompt set definition (short vs long prompts, chat-turn depth).

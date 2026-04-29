@@ -1,48 +1,50 @@
-# LLM Benchmark Inputs (EC2 vs GCE)
+# LLM Benchmark Inputs (AWS EC2 vs GKE)
 
 Fill this in before executing the benchmark matrix.
 
-## Target endpoints
+## Target endpoints (frozen)
 
-- EC2 base URL:
-- GCE base URL:
-- Endpoint mix:
-  - `% /ask`
-  - `% /chat`
+- AWS EC2 base URL: `http://13.218.182.144:5003`
+- GKE ingress base URL: `http://34.111.116.109`
+- Endpoint mix from built-in scenario suite:
+  - `/ask`: `llm_ask_short_low_concurrency`, `llm_ask_short_high_concurrency`, `llm_ask_long_prompt`
+  - `/chat`: `llm_chat_multiturn_pooled_sessions`
 
-## Runtime parity (must match across clouds)
+## Runtime parity (must match across clouds; frozen)
 
-- `GEMINI_MODEL`:
-- `UVICORN_WORKERS`:
-- `GEMINI_REQUEST_TIMEOUT_SECONDS`:
-- `RATE_LIMIT_RPM`:
-- `CHAT_CONTEXT_MESSAGES`:
-- VM specs:
-  - AWS instance type:
-  - GCP instance type:
-  - region pair:
+- `GEMINI_MODEL`: `gemini-2.5-flash`
+- `UVICORN_WORKERS`: `2`
+- `GEMINI_REQUEST_TIMEOUT_SECONDS`: `20`
+- `RATE_LIMIT_RPM`: `60`
+- `CHAT_CONTEXT_MESSAGES`: `5`
+- `REDIS_KEY_PREFIX`: `llm`
+- `REDIS_TIMEOUT_SECONDS`: `2`
+- `REDIS_SESSION_TTL_SECONDS`: `86400`
+- Infra footprint:
+  - AWS EC2: `t3.small` (single VM, `us-east-1`)
+  - GKE: `e2-standard-2 x2` (single regional cluster/service ingress)
 
-## Load profile
+## Load profile (frozen)
 
-- Warmup:
-  - duration or request count:
-- Test window:
-  - duration or request count:
-- Concurrency levels:
-- Ramp strategy:
-  - step, linear, or spike:
-- Cooldown window:
+- Warmup: 1 iteration per scenario (implemented in `run_all_llm`)
+- Test window: fixed iteration counts per scenario:
+  - `llm_ask_short_low_concurrency`: `concurrency=3`, `iterations=6`
+  - `llm_ask_short_high_concurrency`: `concurrency=8`, `iterations=8`
+  - `llm_chat_multiturn_pooled_sessions`: `concurrency=4`, `iterations=4`, `chat_turn_depth=3`
+  - `llm_ask_long_prompt`: `concurrency=3`, `iterations=4`
+- Ramp strategy: scenario-level stepped matrix (low/high/chat/long)
+- Cooldown: `0s`
 
-## Prompt dataset
+## Prompt dataset (frozen)
 
-- Prompt set ID/version:
+- Prompt set source: `benchmarks/scenarios/llm.py`
 - Prompt size buckets:
-  - short
-  - medium
-  - long
-- Chat turn depth:
+  - short: 3 prompts (`DEFAULT_SHORT_PROMPTS`)
+  - long: 2 prompts (`DEFAULT_LONG_PROMPTS`)
+- Chat turn depth: `3` (chat scenario only)
 - Session reuse policy:
-  - new session per request or pooled sessions:
+  - `/ask`: `new_per_request`
+  - `/chat`: `pooled`
 
 ## Metrics to collect
 
@@ -50,7 +52,9 @@ Fill this in before executing the benchmark matrix.
 - Latency (p50/p90/p95/p99)
 - HTTP error rate by status code
 - Gemini failures/timeouts
-- VM CPU / memory / network usage
+- Pod CPU / memory / network usage
+- Redis saturation/latency
+- Ingress 4xx/5xx
 
 ## Operational constraints
 
@@ -60,8 +64,12 @@ Fill this in before executing the benchmark matrix.
 
 ## Result metadata
 
-- Run ID:
-- Git commit SHA:
-- Start timestamp (UTC):
-- End timestamp (UTC):
-- Notes (incidents, retries, key observations):
+- EC2 run ID: `ec2-hybrid-baseline`
+- GKE run ID: `gke-hybrid-baseline`
+- Git commit SHA: `d80d405`
+- Start timestamp (UTC): `2026-04-29T18:45:16Z`
+- End timestamp (UTC): `2026-04-29T18:58:02Z`
+- Notes:
+  - Both runs completed with `0` failures for all scenarios.
+  - EC2 Redis path uses local `redis6` service for this baseline.
+  - GKE Redis path uses Kubernetes secret-provided managed endpoint.

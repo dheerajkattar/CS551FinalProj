@@ -39,13 +39,17 @@ python3 -m benchmarks.runner \
 Each app has predefined scenarios that run automatically when you provide the URL:
 
 **CRUD** (`--crud-url`)
-- `crud_user_requests`: Single user creates, reads, and deletes notes with realistic think time (200 iterations, 20 concurrent users)
+- `notes_concurrent_users`: concurrent user flow that registers, logs in, and runs repeated create/read/list/delete note operations.
 
 **CPU** (`--cpu-url`) — Coming soon
 
 **Queue** (`--queue-url`) — Coming soon
 
-**LLM** (`--llm-url`) — Coming soon
+**LLM** (`--llm-url`)
+- `llm_ask_short_low_concurrency`: `/ask` with short prompts and light concurrency.
+- `llm_ask_short_high_concurrency`: `/ask` with short prompts and higher concurrency.
+- `llm_chat_multiturn_pooled_sessions`: `/chat` multi-turn workload with pooled sessions.
+- `llm_ask_long_prompt`: `/ask` with longer prompts to exercise token-heavy requests.
 
 ## Output
 
@@ -80,4 +84,8 @@ cat benchmarks/results/deployment-b/results.json
 Edit `benchmarks/scenarios/<app>.py` to modify test parameters:
 - Each scenario function includes hardcoded `iterations`, `concurrency`, and think times
 - Modify the `run_all_<app>()` function to change defaults
+- For LLM, scenario matrix dimensions are controlled via `scenario_options` (prompt list, session policy, chat turn depth).
+
+LLM benchmarking input checklist:
+- `benchmarks/LLM_BENCHMARK_INPUTS.md`
 

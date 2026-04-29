@@ -57,6 +57,9 @@ def main() -> None:
         print(f"\nRunning {app_name} benchmarks...")
         runner = runners[app_name]
         scenario_results = runner(base_url)
+        if not scenario_results:
+            print(f"  ! Warning: no benchmark scenarios returned for app '{app_name}'")
+            continue
 
         for scenario_name, metrics in scenario_results:
             row = {

@@ -1,25 +1,27 @@
-CS551 Final Project: Cloud workload benchmarking with a current pivot to LLM-first VM deployment.
+CS551 Final Project: Cloud workload benchmarking with a current pivot to hybrid LLM deployment (AWS EC2 + GCP GKE).
 
-## Current Focus: LLM on EC2 + GCE
+## Current Focus: LLM on AWS EC2 + GKE
 
 Primary implementation lives in `Applications/LLM_APP`.
 
 Deployment artifacts:
 
 - `Applications/LLM_APP/DEPLOYMENT_CONTRACT.md`
-- `deploy/llm_vm/bootstrap.sh`
-- `deploy/llm_vm/deploy_parallel.sh`
-- `deploy/llm_vm/verify.sh`
-- `deploy/llm_vm/EC2_GCE_PARITY.md`
+- `deploy/llm_vm` (AWS EC2 path)
+- `deploy/llm_k8s/base`
+- `deploy/llm_k8s/overlays/gke`
+- `deploy/llm_k8s/scripts`
 
 ## Implementation Status
 
-- LLM runtime hardened for VM deployment:
+- LLM runtime hardened for Kubernetes deployment:
   - runtime-safe Gemini init
   - health/readiness semantics
+  - Redis-backed conversation history for multi-replica safety
   - request timeout and basic rate limiting controls
   - request latency logging
-- Simultaneous deployment workflow for one EC2 VM and one GCE VM is scripted in `deploy/llm_vm`.
+- EC2 provisioning/deploy workflow is scripted in `deploy/llm_vm`.
+- GKE deployment workflow remains in `deploy/llm_k8s/scripts`.
 
 ## Benchmarking (Next Step)
 

@@ -4,6 +4,8 @@ __pycache__/
 .coverage
 htmlcov/
 /benchmarks/results
+deploy/llm_vm/.keys/
+.cursor/
 .env
 .env.*
 !**/.env.example

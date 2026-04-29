@@ -1,82 +1,88 @@
-# LLM FAQ Bot Deployment Contract (EC2 + GCE)
+# LLM FAQ Bot Deployment Contract (AWS EC2 + GKE)
 
-This document defines the runtime contract for deploying `Applications/LLM_APP` on one AWS EC2 VM and one GCP Compute Engine VM.
+This document defines runtime parity requirements for deploying `Applications/LLM_APP` on AWS EC2 and GCP GKE.
 
-## 1) Runtime and process contract
+## 1) Runtime contract
 
-- Application type: ASGI (`FastAPI` app at `main:app`).
-- Default port: `5003` (`PORT` environment variable can override).
-- Recommended process command:
+- App type: ASGI (`FastAPI` app exposed by `main:app`).
+- Container port: `5003`.
+- Startup command:
   - `uvicorn main:app --host 0.0.0.0 --port ${PORT:-5003} --workers ${UVICORN_WORKERS:-2}`
-- Process manager: `systemd` (required for restart behavior).
+- Runtime topology:
+  - EC2 path: systemd-managed VM service.
+  - GKE path: Deployment with HPA for autoscaling.
 
 ## 2) Required environment variables
 
 - Required:
-  - `GEMINI_API_KEY`: Gemini API key for upstream model access.
-- Optional runtime tuning:
-  - `GEMINI_MODEL` (default: `gemini-1.5-flash-latest`)
-  - `GEMINI_REQUEST_TIMEOUT_SECONDS` (default: `20`)
-  - `RATE_LIMIT_RPM` (default: `30`, set `0` to disable)
-  - `CHAT_CONTEXT_MESSAGES` (default: `5`)
-  - `LOG_LEVEL` (default: `INFO`)
-  - `UVICORN_WORKERS` (default: `2`)
-  - `PORT` (default: `5003`)
+  - `GEMINI_API_KEY`
+  - `REDIS_URL` (managed Redis endpoint per cloud)
+- Recommended parity knobs:
+  - `GEMINI_MODEL`
+  - `GEMINI_REQUEST_TIMEOUT_SECONDS`
+  - `RATE_LIMIT_RPM`
+  - `CHAT_CONTEXT_MESSAGES`
+  - `REDIS_KEY_PREFIX`
+  - `REDIS_TIMEOUT_SECONDS`
+  - `REDIS_SESSION_TTL_SECONDS`
+  - `UVICORN_WORKERS`
+  - `PORT`
+  - `LOG_LEVEL`
 
-## 3) `.env` file contract
+## 3) Image/version contract
 
-- `.env` is the source for VM configuration and must not be committed.
-- Recommended location: `/opt/llm-faq-bot/.env`.
-- Required file permissions:
-  - owner: service user (or root with controlled access)
-  - mode: `600`
-- Minimum required keys:
-  - `GEMINI_API_KEY=<secret>`
-- Optional keys may be added for tuning from section 2.
+- Every benchmark run must use immutable app identifiers:
+  - EC2: deployed git SHA/release ID.
+  - GKE: immutable image tag (prefer git SHA).
+- Store both identifiers in benchmark notes for reproducibility.
 
-## 4) Networking contract
+## 4) Platform resource contract
 
-- Inbound:
-  - Allow TCP `5003` from approved client CIDR ranges.
-  - Restrict SSH (`22`) to administrative IPs only.
-- Outbound:
-  - Allow HTTPS egress for Gemini API calls.
+- AWS EC2:
+  - VM host with systemd unit `llm-faq-bot.service`.
+  - Security group exposes `22` and app port (`5003`) per benchmark policy.
+  - Runtime `.env` at `Applications/LLM_APP/.env`.
+- GKE:
+  - Namespace, ServiceAccount, Deployment, Service, HPA, PodDisruptionBudget, Ingress.
+  - Kubernetes `Secret` named `llm-api-secrets` with `GEMINI_API_KEY`, `REDIS_URL`.
 
-## 5) Health and readiness contract
+## 5) Health/readiness contract
 
-- Liveness endpoint: `GET /health`
-  - `status = healthy` and `ready = true` when `GEMINI_API_KEY` is set.
-  - `status = degraded` and `ready = false` when key is absent.
-- Functional readiness check:
-  - `POST /ask` with a lightweight prompt should return `200`.
-  - Missing key must return `503` with non-secret error detail.
+- `GET /health` must expose:
+  - Gemini readiness (`key present`, model init state),
+  - Redis readiness (`redis_configured`, `redis_ready`),
+  - overall `ready` flag.
+- GKE pod readiness probe uses `/health`.
+- Degraded readiness if either Gemini config or Redis availability fails.
 
-## 6) Logging contract
+## 6) Stateful session contract
 
-- Logs must include:
-  - request method, path, HTTP status code, latency milliseconds.
-- Logs must not include:
-  - `GEMINI_API_KEY` or any sensitive header/body content.
-- Preferred sink:
-  - `journald` via `systemd`.
+- `/chat` and `/history` use Redis-backed session storage on both platforms.
+- Session keys are prefixed with `REDIS_KEY_PREFIX`.
+- Session records carry TTL from `REDIS_SESSION_TTL_SECONDS`.
+- Session behavior must remain stable across pod restarts and scale-out.
 
-## 7) Startup and restart behavior
+## 7) Networking contract
 
-- Service must start via `systemd` unit with `EnvironmentFile=/opt/llm-faq-bot/.env`.
-- Service restart policy:
-  - `Restart=always`
-  - `RestartSec=5`
-- On startup without key:
-  - service can remain up for observability, but `/ask` and `/chat` must return `503`.
+- Public endpoint via EC2 public IP / managed LB for AWS.
+- Public endpoint via GKE ingress for GCP.
+- Inbound access scoped to benchmark CIDRs where possible.
+- Outbound HTTPS required for Gemini API traffic.
+- Redis access restricted to host/network policy as applicable.
 
-## 8) Rollback contract
+## 8) Logging and observability contract
 
-- Rollback unit of change:
-  - previous Git revision + previous `.env` + same `systemd` unit.
-- Rollback steps:
-  1. stop service
-  2. checkout previous revision
-  3. reinstall dependencies if changed
-  4. restore previous `.env`
-  5. daemon-reload + restart
-  6. validate `/health` and `POST /ask`
+- App logs include method/path/status/latency.
+- No secret values in logs.
+- Collect baseline metrics:
+  - ingress latency + 4xx/5xx,
+  - pod CPU/memory/restarts,
+  - Redis connection and saturation metrics.
+
+## 9) Rollback contract
+
+- Roll back by immutable version reference + unchanged config/secrets references.
+- Verify rollback success via:
+  - service status (`systemctl`) on EC2 and rollout status on GKE,
+  - `/health`,
+  - `POST /chat` followed by `GET /history/{session_id}`.

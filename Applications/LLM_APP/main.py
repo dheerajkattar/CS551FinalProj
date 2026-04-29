@@ -1,12 +1,15 @@
 import logging
 import os
 import time
+import json
 from collections import defaultdict, deque
 from datetime import datetime
 from threading import Lock
-from typing import Deque, Dict, List
+from typing import Deque, Dict, List, Optional
 
 import google.generativeai as genai
+import redis
+from redis.exceptions import RedisError
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 
@@ -17,16 +20,20 @@ MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash-latest")
 REQUEST_TIMEOUT_SECONDS = float(os.getenv("GEMINI_REQUEST_TIMEOUT_SECONDS", "20"))
 RATE_LIMIT_RPM = int(os.getenv("RATE_LIMIT_RPM", "30"))
 CHAT_CONTEXT_MESSAGES = int(os.getenv("CHAT_CONTEXT_MESSAGES", "5"))
+REDIS_URL = os.getenv("REDIS_URL", "")
+REDIS_KEY_PREFIX = os.getenv("REDIS_KEY_PREFIX", "llm")
+REDIS_TIMEOUT_SECONDS = float(os.getenv("REDIS_TIMEOUT_SECONDS", "2"))
+REDIS_SESSION_TTL_SECONDS = int(os.getenv("REDIS_SESSION_TTL_SECONDS", "86400"))
 
 logger = logging.getLogger("llm_app")
 if not logger.handlers:
     logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 
-# In-memory conversation history/rate limiting (single-VM baseline design)
-conversation_history: List[dict] = []
+# Stateful session storage for Kubernetes deployments + in-memory rate limiting
 request_windows: Dict[str, Deque[float]] = defaultdict(deque)
 request_windows_lock = Lock()
 model = None
+redis_client: Optional[redis.Redis] = None
 
 class Question(BaseModel):
     """Request model for asking a question"""
@@ -49,16 +56,20 @@ class ConversationRequest(BaseModel):
 @app.on_event("startup")
 def startup_log_configuration():
     key_present = bool(os.getenv("GEMINI_API_KEY"))
+    redis_configured = bool(REDIS_URL)
     if key_present:
         logger.info(
-            "Startup config loaded: model=%s timeout_s=%s rate_limit_rpm=%s context_messages=%s",
+            "Startup config loaded: model=%s timeout_s=%s rate_limit_rpm=%s context_messages=%s redis_configured=%s",
             MODEL_NAME,
             REQUEST_TIMEOUT_SECONDS,
             RATE_LIMIT_RPM,
             CHAT_CONTEXT_MESSAGES,
+            redis_configured,
         )
     else:
         logger.warning("GEMINI_API_KEY is not set; /ask and /chat will return 503 until configured.")
+    if not redis_configured:
+        logger.warning("REDIS_URL is not set; history endpoints and chat context are degraded.")
 
 
 @app.middleware("http")
@@ -101,6 +112,78 @@ def enforce_rate_limit(session_id: str):
         window.append(now)
 
 
+def _session_key(session_id: str) -> str:
+    return f"{REDIS_KEY_PREFIX}:session:{session_id}"
+
+
+def get_redis_client() -> Optional[redis.Redis]:
+    global redis_client
+    if not REDIS_URL:
+        return None
+    if redis_client is not None:
+        return redis_client
+    try:
+        redis_client = redis.Redis.from_url(
+            REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=REDIS_TIMEOUT_SECONDS,
+            socket_timeout=REDIS_TIMEOUT_SECONDS,
+        )
+        redis_client.ping()
+    except RedisError as exc:
+        logger.exception("Redis initialization failed")
+        redis_client = None
+        raise HTTPException(status_code=503, detail=f"Redis unavailable: {exc}") from exc
+    return redis_client
+
+
+def append_history_entry(session_id: str, entry: dict) -> bool:
+    client = get_redis_client()
+    if client is None:
+        return False
+    try:
+        key = _session_key(session_id)
+        client.rpush(key, json.dumps(entry))
+        client.expire(key, REDIS_SESSION_TTL_SECONDS)
+        return True
+    except RedisError as exc:
+        logger.warning("Failed to append session history for session=%s error=%s", session_id, exc)
+        return False
+
+
+def get_session_history(session_id: str) -> List[dict]:
+    client = get_redis_client()
+    if client is None:
+        return []
+    try:
+        raw_entries = client.lrange(_session_key(session_id), 0, -1)
+    except RedisError as exc:
+        raise HTTPException(status_code=503, detail=f"Redis unavailable: {exc}") from exc
+
+    entries: List[dict] = []
+    for raw_entry in raw_entries:
+        try:
+            parsed = json.loads(raw_entry)
+            if isinstance(parsed, dict):
+                entries.append(parsed)
+        except json.JSONDecodeError:
+            continue
+    return entries
+
+
+def clear_session_history(session_id: str) -> int:
+    client = get_redis_client()
+    if client is None:
+        return 0
+    key = _session_key(session_id)
+    try:
+        existing_count = client.llen(key)
+        client.delete(key)
+    except RedisError as exc:
+        raise HTTPException(status_code=503, detail=f"Redis unavailable: {exc}") from exc
+    return int(existing_count)
+
+
 def get_gemini_model():
     global model
     if model is not None:
@@ -131,9 +214,14 @@ def generate_answer(prompt: str) -> str:
             prompt,
             request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
         )
-    except TypeError:
-        # Test doubles or older SDK signatures may not accept request_options.
-        response = llm_model.generate_content(prompt)
+    except Exception as exc:
+        # Older SDKs can reject request_options with non-TypeError exceptions.
+        error_text = str(exc)
+        if "request_options" in error_text or "Unknown field" in error_text:
+            logger.warning("Falling back to generate_content without request_options")
+            response = llm_model.generate_content(prompt)
+        else:
+            raise
 
     answer = getattr(response, "text", "")
     if not answer:
@@ -181,7 +269,7 @@ def ask_question(request: Question):
             "timestamp": datetime.now().isoformat(),
             "role": "faq"
         }
-        conversation_history.append(entry)
+        append_history_entry(request.session_id, entry)
 
         return Answer(
             question=request.question,
@@ -217,7 +305,7 @@ def chat_conversation(request: ConversationRequest):
 
         # Get conversation context for this session
         session_messages = [
-            h for h in conversation_history
+            h for h in get_session_history(request.session_id)
             if h.get("session_id") == request.session_id and h.get("role") != "faq"
         ]
 
@@ -243,7 +331,7 @@ def chat_conversation(request: ConversationRequest):
             "timestamp": datetime.now().isoformat(),
             "role": "chat"
         }
-        conversation_history.append(entry)
+        append_history_entry(request.session_id, entry)
 
         return Answer(
             question=request.message,
@@ -262,10 +350,7 @@ def get_conversation_history(session_id: str):
     """
     Get conversation history for a specific session
     """
-    session_data = [
-        h for h in conversation_history
-        if h.get("session_id") == session_id
-    ]
+    session_data = get_session_history(session_id)
 
     if not session_data:
         raise HTTPException(status_code=404, detail=f"No conversation history found for session {session_id}")
@@ -281,13 +366,7 @@ def clear_conversation_history(session_id: str):
     """
     Clear conversation history for a specific session
     """
-    global conversation_history
-    initial_count = len(conversation_history)
-    conversation_history = [
-        h for h in conversation_history
-        if h.get("session_id") != session_id
-    ]
-    removed = initial_count - len(conversation_history)
+    removed = clear_session_history(session_id)
 
     return {
         "session_id": session_id,
@@ -299,12 +378,24 @@ def clear_conversation_history(session_id: str):
 def health_check():
     """Health check endpoint"""
     key_present = bool(os.getenv("GEMINI_API_KEY"))
+    redis_ready = False
+    redis_error = None
+    try:
+        redis_client_ref = get_redis_client()
+        redis_ready = redis_client_ref is not None
+    except HTTPException as exc:
+        redis_error = exc.detail
+
+    ready = key_present and redis_ready
     return {
-        "status": "healthy" if key_present else "degraded",
-        "ready": key_present,
+        "status": "healthy" if ready else "degraded",
+        "ready": ready,
         "service": "LLM FAQ Bot",
         "model": MODEL_NAME,
         "model_initialized": model is not None,
+        "redis_configured": bool(REDIS_URL),
+        "redis_ready": redis_ready,
+        "redis_error": redis_error,
         "timestamp": datetime.now().isoformat()
     }
 

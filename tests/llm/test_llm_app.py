@@ -7,6 +7,32 @@ from fastapi.testclient import TestClient
 MODULE_NAME = "Applications.LLM_APP.main"
 
 
+class FakeRedis:
+    def __init__(self):
+        self._store = {}
+
+    def ping(self):
+        return True
+
+    def rpush(self, key, value):
+        self._store.setdefault(key, []).append(value)
+
+    def expire(self, key, _ttl):
+        return True
+
+    def lrange(self, key, start, end):
+        values = self._store.get(key, [])
+        if end == -1:
+            end = len(values) - 1
+        return values[start : end + 1]
+
+    def llen(self, key):
+        return len(self._store.get(key, []))
+
+    def delete(self, key):
+        self._store.pop(key, None)
+
+
 class DummyResponse:
     def __init__(self, text):
         self.text = text
@@ -19,10 +45,13 @@ class DummyModel:
 
 @pytest.fixture
 def llm_module(monkeypatch):
+    monkeypatch.setenv("REDIS_URL", "redis://fake-redis:6379/0")
     module = importlib.import_module(MODULE_NAME)
-    module.conversation_history = []
+    module = importlib.reload(module)
     module.request_windows.clear()
     module.model = None
+    module.redis_client = FakeRedis()
+    monkeypatch.setattr(module, "get_redis_client", lambda: module.redis_client)
     return module
 
 
@@ -49,7 +78,7 @@ def test_ask_endpoint_success(client, llm_module, monkeypatch):
     assert body["question"] == "What is ML?"
     assert body["answer"].startswith("echo:")
     assert body["session_id"] == "s1"
-    assert len(llm_module.conversation_history) == 1
+    assert llm_module.redis_client.llen(llm_module._session_key("s1")) == 1
 
 
 @pytest.mark.api
@@ -133,6 +162,22 @@ def test_health_degraded_when_key_missing(client, llm_module, monkeypatch):
     body = response.json()
     assert body["status"] == "degraded"
     assert body["ready"] is False
+
+
+@pytest.mark.api
+def test_health_degraded_when_redis_unavailable(client, llm_module, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "dummy-key")
+
+    def redis_unavailable():
+        raise llm_module.HTTPException(status_code=503, detail="Redis unavailable")
+
+    monkeypatch.setattr(llm_module, "get_redis_client", redis_unavailable)
+    response = client.get("/health")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "degraded"
+    assert body["ready"] is False
+    assert body["redis_ready"] is False
 
 
 @pytest.mark.api
